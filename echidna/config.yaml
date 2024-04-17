@@ -1,0 +1,16 @@
+testMode: assertion
+corpusDir: corpus
+seqLen: 100
+testLimit: 100000
+
+# multi-abi: true
+# allContracts: true
+
+# fixes the issue with a constructor on:
+# revert, out-of-gas, sending ether to an non-payable constructor
+codeSize: 0xffffffffff
+
+deployer: "0x10000"
+psender: "0x10000"
+contractAddr: "0x10000"
+sender: ["0x10000"]

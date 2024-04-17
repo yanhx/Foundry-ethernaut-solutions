@@ -1,0 +1,1172 @@
+<style> code { white-space: pre-wrap; display: block; background-color: #eee; }.executed { background-color: #afa; }.reverted { background-color: #ffa; }.unexecuted { background-color: #faa; }.neutral { background-color: #eee; }</style><b>/root/rareskills-solidity/Foundry-ethernaut-solutions/echidna/DexEchidna.sol</b>
+<code>
+  1 |     | <span class='unexecuted'>// SPDX-License-Identifier: UNLICENSED</span>
+  2 |     | <span class='neutral'>pragma solidity ^0.8.14;</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>import &quot;../src/Dex/DexFactory.sol&quot;;</span>
+  5 |     | <span class='neutral'>import &quot;../src/Ethernaut.sol&quot;;</span>
+  6 |     | <span class='neutral'>import &quot;../src/Dex/Dex.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 | *r  | <span class='executed'>contract DexEchidna {</span>
+  9 |     | <span class='neutral'>    Ethernaut ethernaut;</span>
+ 10 |     | <span class='neutral'>    DexFactory factory;</span>
+ 11 |     | <span class='neutral'>    Dex dex;</span>
+ 12 |     | <span class='neutral'>    address token1Address;</span>
+ 13 |     | <span class='neutral'>    address token2Address;</span>
+ 14 |     | <span class='neutral'></span>
+ 15 |     | <span class='unexecuted'>    constructor() {</span>
+ 16 |     | <span class='unexecuted'>        ethernaut = new Ethernaut();</span>
+ 17 |     | <span class='unexecuted'>        factory = new DexFactory();</span>
+ 18 |     | <span class='unexecuted'>        ethernaut.registerLevel(factory);</span>
+ 19 |     | <span class='unexecuted'>        address levelAddress = ethernaut.createLevelInstance(factory);</span>
+ 20 |     | <span class='unexecuted'>        dex = Dex(payable(levelAddress));</span>
+ 21 |     | <span class='neutral'></span>
+ 22 |     | <span class='unexecuted'>        token1Address = dex.token1();</span>
+ 23 |     | <span class='unexecuted'>        token2Address = dex.token2();</span>
+ 24 |     | <span class='unexecuted'>        ERC20(token1Address).approve(address(dex), type(uint256).max);</span>
+ 25 |     | <span class='unexecuted'>        ERC20(token2Address).approve(address(dex), type(uint256).max);</span>
+ 26 |     | <span class='neutral'>    }</span>
+ 27 |     | <span class='neutral'></span>
+ 28 | *   | <span class='executed'>    function add_liquidity(bool token1) public {</span>
+ 29 | *   | <span class='executed'>        if (token1) {</span>
+ 30 | *   | <span class='executed'>            uint256 amount = ERC20(token1Address).balanceOf(address(this));</span>
+ 31 | *r  | <span class='executed'>            dex.add_liquidity(token1Address, amount);</span>
+ 32 |     | <span class='neutral'>        } else {</span>
+ 33 | *   | <span class='executed'>            uint256 amount = ERC20(token2Address).balanceOf(address(this));</span>
+ 34 | *   | <span class='executed'>            dex.add_liquidity(token2Address, amount);</span>
+ 35 |     | <span class='neutral'>        }</span>
+ 36 |     | <span class='neutral'>    }</span>
+ 37 |     | <span class='neutral'></span>
+ 38 | *   | <span class='executed'>    function swap(bool a2b) public {</span>
+ 39 | *   | <span class='executed'>        uint256 amount;</span>
+ 40 | *   | <span class='executed'>        if (a2b) {</span>
+ 41 | *   | <span class='executed'>            amount = ERC20(token1Address).balanceOf(address(this));</span>
+ 42 | *   | <span class='executed'>            dex.swap(token1Address, token2Address, amount);</span>
+ 43 |     | <span class='neutral'>        } else {</span>
+ 44 | *   | <span class='executed'>            amount = ERC20(token2Address).balanceOf(address(this));</span>
+ 45 | *   | <span class='executed'>            dex.swap(token2Address, token1Address, amount);</span>
+ 46 |     | <span class='neutral'>        }</span>
+ 47 |     | <span class='neutral'>    }</span>
+ 48 |     | <span class='neutral'></span>
+ 49 |     | <span class='neutral'>    function min(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 50 |     | <span class='neutral'>        return a &lt;= b ? a : b;</span>
+ 51 |     | <span class='neutral'>    }</span>
+ 52 |     | <span class='neutral'></span>
+ 53 | *   | <span class='executed'>    function testSolved() public {</span>
+ 54 | *   | <span class='executed'>        assert(ERC20(token1Address).balanceOf(address(dex)) &gt; 85);</span>
+ 55 | *   | <span class='executed'>        assert(ERC20(token2Address).balanceOf(address(dex)) &gt; 85);</span>
+ 56 |     | <span class='neutral'>    }</span>
+ 57 |     | <span class='neutral'>}</span>
+ 58 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/access/Ownable.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.7.0) (access/Ownable.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>import &quot;../utils/Context.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 |     | <span class='neutral'>/**</span>
+  9 |     | <span class='neutral'> * @dev Contract module which provides a basic access control mechanism, where</span>
+ 10 |     | <span class='neutral'> * there is an account (an owner) that can be granted exclusive access to</span>
+ 11 |     | <span class='neutral'> * specific functions.</span>
+ 12 |     | <span class='neutral'> *</span>
+ 13 |     | <span class='neutral'> * By default, the owner account will be the one that deploys the contract. This</span>
+ 14 |     | <span class='neutral'> * can later be changed with {transferOwnership}.</span>
+ 15 |     | <span class='neutral'> *</span>
+ 16 |     | <span class='neutral'> * This module is used through inheritance. It will make available the modifier</span>
+ 17 |     | <span class='neutral'> * `onlyOwner`, which can be applied to your functions to restrict their use to</span>
+ 18 |     | <span class='neutral'> * the owner.</span>
+ 19 |     | <span class='neutral'> */</span>
+ 20 |     | <span class='neutral'>abstract contract Ownable is Context {</span>
+ 21 |     | <span class='neutral'>    address private _owner;</span>
+ 22 |     | <span class='neutral'></span>
+ 23 |     | <span class='neutral'>    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);</span>
+ 24 |     | <span class='neutral'></span>
+ 25 |     | <span class='neutral'>    /**</span>
+ 26 |     | <span class='neutral'>     * @dev Initializes the contract setting the deployer as the initial owner.</span>
+ 27 |     | <span class='neutral'>     */</span>
+ 28 |     | <span class='neutral'>    constructor() {</span>
+ 29 |     | <span class='unexecuted'>        _transferOwnership(_msgSender());</span>
+ 30 |     | <span class='neutral'>    }</span>
+ 31 |     | <span class='neutral'></span>
+ 32 |     | <span class='neutral'>    /**</span>
+ 33 |     | <span class='neutral'>     * @dev Throws if called by any account other than the owner.</span>
+ 34 |     | <span class='neutral'>     */</span>
+ 35 |     | <span class='neutral'>    modifier onlyOwner() {</span>
+ 36 |     | <span class='unexecuted'>        _checkOwner();</span>
+ 37 |     | <span class='neutral'>        _;</span>
+ 38 |     | <span class='neutral'>    }</span>
+ 39 |     | <span class='neutral'></span>
+ 40 |     | <span class='neutral'>    /**</span>
+ 41 |     | <span class='neutral'>     * @dev Returns the address of the current owner.</span>
+ 42 |     | <span class='neutral'>     */</span>
+ 43 |     | <span class='unexecuted'>    function owner() public view virtual returns (address) {</span>
+ 44 |     | <span class='unexecuted'>        return _owner;</span>
+ 45 |     | <span class='neutral'>    }</span>
+ 46 |     | <span class='neutral'></span>
+ 47 |     | <span class='neutral'>    /**</span>
+ 48 |     | <span class='neutral'>     * @dev Throws if the sender is not the owner.</span>
+ 49 |     | <span class='neutral'>     */</span>
+ 50 |     | <span class='unexecuted'>    function _checkOwner() internal view virtual {</span>
+ 51 |     | <span class='unexecuted'>        require(owner() == _msgSender(), &quot;Ownable: caller is not the owner&quot;);</span>
+ 52 |     | <span class='neutral'>    }</span>
+ 53 |     | <span class='neutral'></span>
+ 54 |     | <span class='neutral'>    /**</span>
+ 55 |     | <span class='neutral'>     * @dev Leaves the contract without owner. It will not be possible to call</span>
+ 56 |     | <span class='neutral'>     * `onlyOwner` functions anymore. Can only be called by the current owner.</span>
+ 57 |     | <span class='neutral'>     *</span>
+ 58 |     | <span class='neutral'>     * NOTE: Renouncing ownership will leave the contract without an owner,</span>
+ 59 |     | <span class='neutral'>     * thereby removing any functionality that is only available to the owner.</span>
+ 60 |     | <span class='neutral'>     */</span>
+ 61 |     | <span class='unexecuted'>    function renounceOwnership() public virtual onlyOwner {</span>
+ 62 |     | <span class='unexecuted'>        _transferOwnership(address(0));</span>
+ 63 |     | <span class='neutral'>    }</span>
+ 64 |     | <span class='neutral'></span>
+ 65 |     | <span class='neutral'>    /**</span>
+ 66 |     | <span class='neutral'>     * @dev Transfers ownership of the contract to a new account (`newOwner`).</span>
+ 67 |     | <span class='neutral'>     * Can only be called by the current owner.</span>
+ 68 |     | <span class='neutral'>     */</span>
+ 69 |     | <span class='unexecuted'>    function transferOwnership(address newOwner) public virtual onlyOwner {</span>
+ 70 |     | <span class='unexecuted'>        require(newOwner != address(0), &quot;Ownable: new owner is the zero address&quot;);</span>
+ 71 |     | <span class='unexecuted'>        _transferOwnership(newOwner);</span>
+ 72 |     | <span class='neutral'>    }</span>
+ 73 |     | <span class='neutral'></span>
+ 74 |     | <span class='neutral'>    /**</span>
+ 75 |     | <span class='neutral'>     * @dev Transfers ownership of the contract to a new account (`newOwner`).</span>
+ 76 |     | <span class='neutral'>     * Internal function without access restriction.</span>
+ 77 |     | <span class='neutral'>     */</span>
+ 78 |     | <span class='unexecuted'>    function _transferOwnership(address newOwner) internal virtual {</span>
+ 79 |     | <span class='unexecuted'>        address oldOwner = _owner;</span>
+ 80 |     | <span class='unexecuted'>        _owner = newOwner;</span>
+ 81 |     | <span class='unexecuted'>        emit OwnershipTransferred(oldOwner, newOwner);</span>
+ 82 |     | <span class='neutral'>    }</span>
+ 83 |     | <span class='neutral'>}</span>
+ 84 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol</b>
+<code>
+   1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.7.0) (token/ERC20/ERC20.sol)</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+   5 |     | <span class='neutral'></span>
+   6 |     | <span class='neutral'>import &quot;./IERC20.sol&quot;;</span>
+   7 |     | <span class='neutral'>import &quot;./extensions/IERC20Metadata.sol&quot;;</span>
+   8 |     | <span class='neutral'>import &quot;../../utils/Context.sol&quot;;</span>
+   9 |     | <span class='neutral'></span>
+  10 |     | <span class='neutral'>/**</span>
+  11 |     | <span class='neutral'> * @dev Implementation of the {IERC20} interface.</span>
+  12 |     | <span class='neutral'> *</span>
+  13 |     | <span class='neutral'> * This implementation is agnostic to the way tokens are created. This means</span>
+  14 |     | <span class='neutral'> * that a supply mechanism has to be added in a derived contract using {_mint}.</span>
+  15 |     | <span class='neutral'> * For a generic mechanism see {ERC20PresetMinterPauser}.</span>
+  16 |     | <span class='neutral'> *</span>
+  17 |     | <span class='neutral'> * TIP: For a detailed writeup see our guide</span>
+  18 |     | <span class='neutral'> * https://forum.openzeppelin.com/t/how-to-implement-erc20-supply-mechanisms/226[How</span>
+  19 |     | <span class='neutral'> * to implement supply mechanisms].</span>
+  20 |     | <span class='neutral'> *</span>
+  21 |     | <span class='neutral'> * We have followed general OpenZeppelin Contracts guidelines: functions revert</span>
+  22 |     | <span class='neutral'> * instead returning `false` on failure. This behavior is nonetheless</span>
+  23 |     | <span class='neutral'> * conventional and does not conflict with the expectations of ERC20</span>
+  24 |     | <span class='neutral'> * applications.</span>
+  25 |     | <span class='neutral'> *</span>
+  26 |     | <span class='neutral'> * Additionally, an {Approval} event is emitted on calls to {transferFrom}.</span>
+  27 |     | <span class='neutral'> * This allows applications to reconstruct the allowance for all accounts just</span>
+  28 |     | <span class='neutral'> * by listening to said events. Other implementations of the EIP may not emit</span>
+  29 |     | <span class='neutral'> * these events, as it isn&#39;t required by the specification.</span>
+  30 |     | <span class='neutral'> *</span>
+  31 |     | <span class='neutral'> * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}</span>
+  32 |     | <span class='neutral'> * functions have been added to mitigate the well-known issues around setting</span>
+  33 |     | <span class='neutral'> * allowances. See {IERC20-approve}.</span>
+  34 |     | <span class='neutral'> */</span>
+  35 | *   | <span class='executed'>contract ERC20 is Context, IERC20, IERC20Metadata {</span>
+  36 |     | <span class='neutral'>    mapping(address =&gt; uint256) private _balances;</span>
+  37 |     | <span class='neutral'></span>
+  38 |     | <span class='neutral'>    mapping(address =&gt; mapping(address =&gt; uint256)) private _allowances;</span>
+  39 |     | <span class='neutral'></span>
+  40 |     | <span class='neutral'>    uint256 private _totalSupply;</span>
+  41 |     | <span class='neutral'></span>
+  42 |     | <span class='neutral'>    string private _name;</span>
+  43 |     | <span class='neutral'>    string private _symbol;</span>
+  44 |     | <span class='neutral'></span>
+  45 |     | <span class='neutral'>    /**</span>
+  46 |     | <span class='neutral'>     * @dev Sets the values for {name} and {symbol}.</span>
+  47 |     | <span class='neutral'>     *</span>
+  48 |     | <span class='neutral'>     * The default value of {decimals} is 18. To select a different value for</span>
+  49 |     | <span class='neutral'>     * {decimals} you should overload it.</span>
+  50 |     | <span class='neutral'>     *</span>
+  51 |     | <span class='neutral'>     * All two of these values are immutable: they can only be set once during</span>
+  52 |     | <span class='neutral'>     * construction.</span>
+  53 |     | <span class='neutral'>     */</span>
+  54 |     | <span class='unexecuted'>    constructor(string memory name_, string memory symbol_) {</span>
+  55 |     | <span class='unexecuted'>        _name = name_;</span>
+  56 |     | <span class='unexecuted'>        _symbol = symbol_;</span>
+  57 |     | <span class='neutral'>    }</span>
+  58 |     | <span class='neutral'></span>
+  59 |     | <span class='neutral'>    /**</span>
+  60 |     | <span class='neutral'>     * @dev Returns the name of the token.</span>
+  61 |     | <span class='neutral'>     */</span>
+  62 | *   | <span class='executed'>    function name() public view virtual override returns (string memory) {</span>
+  63 |     | <span class='unexecuted'>        return _name;</span>
+  64 |     | <span class='neutral'>    }</span>
+  65 |     | <span class='neutral'></span>
+  66 |     | <span class='neutral'>    /**</span>
+  67 |     | <span class='neutral'>     * @dev Returns the symbol of the token, usually a shorter version of the</span>
+  68 |     | <span class='neutral'>     * name.</span>
+  69 |     | <span class='neutral'>     */</span>
+  70 |     | <span class='unexecuted'>    function symbol() public view virtual override returns (string memory) {</span>
+  71 |     | <span class='unexecuted'>        return _symbol;</span>
+  72 |     | <span class='neutral'>    }</span>
+  73 |     | <span class='neutral'></span>
+  74 |     | <span class='neutral'>    /**</span>
+  75 |     | <span class='neutral'>     * @dev Returns the number of decimals used to get its user representation.</span>
+  76 |     | <span class='neutral'>     * For example, if `decimals` equals `2`, a balance of `505` tokens should</span>
+  77 |     | <span class='neutral'>     * be displayed to a user as `5.05` (`505 / 10 ** 2`).</span>
+  78 |     | <span class='neutral'>     *</span>
+  79 |     | <span class='neutral'>     * Tokens usually opt for a value of 18, imitating the relationship between</span>
+  80 |     | <span class='neutral'>     * Ether and Wei. This is the value {ERC20} uses, unless this function is</span>
+  81 |     | <span class='neutral'>     * overridden;</span>
+  82 |     | <span class='neutral'>     *</span>
+  83 |     | <span class='neutral'>     * NOTE: This information is only used for _display_ purposes: it in</span>
+  84 |     | <span class='neutral'>     * no way affects any of the arithmetic of the contract, including</span>
+  85 |     | <span class='neutral'>     * {IERC20-balanceOf} and {IERC20-transfer}.</span>
+  86 |     | <span class='neutral'>     */</span>
+  87 |     | <span class='unexecuted'>    function decimals() public view virtual override returns (uint8) {</span>
+  88 |     | <span class='unexecuted'>        return 18;</span>
+  89 |     | <span class='neutral'>    }</span>
+  90 |     | <span class='neutral'></span>
+  91 |     | <span class='neutral'>    /**</span>
+  92 |     | <span class='neutral'>     * @dev See {IERC20-totalSupply}.</span>
+  93 |     | <span class='neutral'>     */</span>
+  94 | *   | <span class='executed'>    function totalSupply() public view virtual override returns (uint256) {</span>
+  95 |     | <span class='unexecuted'>        return _totalSupply;</span>
+  96 |     | <span class='neutral'>    }</span>
+  97 |     | <span class='neutral'></span>
+  98 |     | <span class='neutral'>    /**</span>
+  99 |     | <span class='neutral'>     * @dev See {IERC20-balanceOf}.</span>
+ 100 |     | <span class='neutral'>     */</span>
+ 101 | *   | <span class='executed'>    function balanceOf(address account) public view virtual override returns (uint256) {</span>
+ 102 | *   | <span class='executed'>        return _balances[account];</span>
+ 103 |     | <span class='neutral'>    }</span>
+ 104 |     | <span class='neutral'></span>
+ 105 |     | <span class='neutral'>    /**</span>
+ 106 |     | <span class='neutral'>     * @dev See {IERC20-transfer}.</span>
+ 107 |     | <span class='neutral'>     *</span>
+ 108 |     | <span class='neutral'>     * Requirements:</span>
+ 109 |     | <span class='neutral'>     *</span>
+ 110 |     | <span class='neutral'>     * - `to` cannot be the zero address.</span>
+ 111 |     | <span class='neutral'>     * - the caller must have a balance of at least `amount`.</span>
+ 112 |     | <span class='neutral'>     */</span>
+ 113 |     | <span class='unexecuted'>    function transfer(address to, uint256 amount) public virtual override returns (bool) {</span>
+ 114 |     | <span class='neutral'>        address owner = _msgSender();</span>
+ 115 |     | <span class='unexecuted'>        _transfer(owner, to, amount);</span>
+ 116 |     | <span class='neutral'>        return true;</span>
+ 117 |     | <span class='neutral'>    }</span>
+ 118 |     | <span class='neutral'></span>
+ 119 |     | <span class='neutral'>    /**</span>
+ 120 |     | <span class='neutral'>     * @dev See {IERC20-allowance}.</span>
+ 121 |     | <span class='neutral'>     */</span>
+ 122 | *   | <span class='executed'>    function allowance(address owner, address spender) public view virtual override returns (uint256) {</span>
+ 123 | *   | <span class='executed'>        return _allowances[owner][spender];</span>
+ 124 |     | <span class='neutral'>    }</span>
+ 125 |     | <span class='neutral'></span>
+ 126 |     | <span class='neutral'>    /**</span>
+ 127 |     | <span class='neutral'>     * @dev See {IERC20-approve}.</span>
+ 128 |     | <span class='neutral'>     *</span>
+ 129 |     | <span class='neutral'>     * NOTE: If `amount` is the maximum `uint256`, the allowance is not updated on</span>
+ 130 |     | <span class='neutral'>     * `transferFrom`. This is semantically equivalent to an infinite approval.</span>
+ 131 |     | <span class='neutral'>     *</span>
+ 132 |     | <span class='neutral'>     * Requirements:</span>
+ 133 |     | <span class='neutral'>     *</span>
+ 134 |     | <span class='neutral'>     * - `spender` cannot be the zero address.</span>
+ 135 |     | <span class='neutral'>     */</span>
+ 136 | *   | <span class='executed'>    function approve(address spender, uint256 amount) public virtual override returns (bool) {</span>
+ 137 |     | <span class='neutral'>        address owner = _msgSender();</span>
+ 138 | *   | <span class='executed'>        _approve(owner, spender, amount);</span>
+ 139 | *   | <span class='executed'>        return true;</span>
+ 140 |     | <span class='neutral'>    }</span>
+ 141 |     | <span class='neutral'></span>
+ 142 |     | <span class='neutral'>    /**</span>
+ 143 |     | <span class='neutral'>     * @dev See {IERC20-transferFrom}.</span>
+ 144 |     | <span class='neutral'>     *</span>
+ 145 |     | <span class='neutral'>     * Emits an {Approval} event indicating the updated allowance. This is not</span>
+ 146 |     | <span class='neutral'>     * required by the EIP. See the note at the beginning of {ERC20}.</span>
+ 147 |     | <span class='neutral'>     *</span>
+ 148 |     | <span class='neutral'>     * NOTE: Does not update the allowance if the current allowance</span>
+ 149 |     | <span class='neutral'>     * is the maximum `uint256`.</span>
+ 150 |     | <span class='neutral'>     *</span>
+ 151 |     | <span class='neutral'>     * Requirements:</span>
+ 152 |     | <span class='neutral'>     *</span>
+ 153 |     | <span class='neutral'>     * - `from` and `to` cannot be the zero address.</span>
+ 154 |     | <span class='neutral'>     * - `from` must have a balance of at least `amount`.</span>
+ 155 |     | <span class='neutral'>     * - the caller must have allowance for ``from``&#39;s tokens of at least</span>
+ 156 |     | <span class='neutral'>     * `amount`.</span>
+ 157 |     | <span class='neutral'>     */</span>
+ 158 | *   | <span class='executed'>    function transferFrom(</span>
+ 159 |     | <span class='neutral'>        address from,</span>
+ 160 |     | <span class='neutral'>        address to,</span>
+ 161 |     | <span class='neutral'>        uint256 amount</span>
+ 162 | *   | <span class='executed'>    ) public virtual override returns (bool) {</span>
+ 163 |     | <span class='neutral'>        address spender = _msgSender();</span>
+ 164 | *   | <span class='executed'>        _spendAllowance(from, spender, amount);</span>
+ 165 | *   | <span class='executed'>        _transfer(from, to, amount);</span>
+ 166 | *   | <span class='executed'>        return true;</span>
+ 167 |     | <span class='neutral'>    }</span>
+ 168 |     | <span class='neutral'></span>
+ 169 |     | <span class='neutral'>    /**</span>
+ 170 |     | <span class='neutral'>     * @dev Atomically increases the allowance granted to `spender` by the caller.</span>
+ 171 |     | <span class='neutral'>     *</span>
+ 172 |     | <span class='neutral'>     * This is an alternative to {approve} that can be used as a mitigation for</span>
+ 173 |     | <span class='neutral'>     * problems described in {IERC20-approve}.</span>
+ 174 |     | <span class='neutral'>     *</span>
+ 175 |     | <span class='neutral'>     * Emits an {Approval} event indicating the updated allowance.</span>
+ 176 |     | <span class='neutral'>     *</span>
+ 177 |     | <span class='neutral'>     * Requirements:</span>
+ 178 |     | <span class='neutral'>     *</span>
+ 179 |     | <span class='neutral'>     * - `spender` cannot be the zero address.</span>
+ 180 |     | <span class='neutral'>     */</span>
+ 181 |     | <span class='unexecuted'>    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {</span>
+ 182 |     | <span class='neutral'>        address owner = _msgSender();</span>
+ 183 |     | <span class='unexecuted'>        _approve(owner, spender, allowance(owner, spender) + addedValue);</span>
+ 184 |     | <span class='neutral'>        return true;</span>
+ 185 |     | <span class='neutral'>    }</span>
+ 186 |     | <span class='neutral'></span>
+ 187 |     | <span class='neutral'>    /**</span>
+ 188 |     | <span class='neutral'>     * @dev Atomically decreases the allowance granted to `spender` by the caller.</span>
+ 189 |     | <span class='neutral'>     *</span>
+ 190 |     | <span class='neutral'>     * This is an alternative to {approve} that can be used as a mitigation for</span>
+ 191 |     | <span class='neutral'>     * problems described in {IERC20-approve}.</span>
+ 192 |     | <span class='neutral'>     *</span>
+ 193 |     | <span class='neutral'>     * Emits an {Approval} event indicating the updated allowance.</span>
+ 194 |     | <span class='neutral'>     *</span>
+ 195 |     | <span class='neutral'>     * Requirements:</span>
+ 196 |     | <span class='neutral'>     *</span>
+ 197 |     | <span class='neutral'>     * - `spender` cannot be the zero address.</span>
+ 198 |     | <span class='neutral'>     * - `spender` must have allowance for the caller of at least</span>
+ 199 |     | <span class='neutral'>     * `subtractedValue`.</span>
+ 200 |     | <span class='neutral'>     */</span>
+ 201 |     | <span class='unexecuted'>    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {</span>
+ 202 |     | <span class='neutral'>        address owner = _msgSender();</span>
+ 203 |     | <span class='unexecuted'>        uint256 currentAllowance = allowance(owner, spender);</span>
+ 204 | *   | <span class='executed'>        require(currentAllowance &gt;= subtractedValue, &quot;ERC20: decreased allowance below zero&quot;);</span>
+ 205 |     | <span class='neutral'>        unchecked {</span>
+ 206 |     | <span class='unexecuted'>            _approve(owner, spender, currentAllowance - subtractedValue);</span>
+ 207 |     | <span class='neutral'>        }</span>
+ 208 |     | <span class='neutral'></span>
+ 209 |     | <span class='neutral'>        return true;</span>
+ 210 |     | <span class='neutral'>    }</span>
+ 211 |     | <span class='neutral'></span>
+ 212 |     | <span class='neutral'>    /**</span>
+ 213 |     | <span class='neutral'>     * @dev Moves `amount` of tokens from `from` to `to`.</span>
+ 214 |     | <span class='neutral'>     *</span>
+ 215 |     | <span class='neutral'>     * This internal function is equivalent to {transfer}, and can be used to</span>
+ 216 |     | <span class='neutral'>     * e.g. implement automatic token fees, slashing mechanisms, etc.</span>
+ 217 |     | <span class='neutral'>     *</span>
+ 218 |     | <span class='neutral'>     * Emits a {Transfer} event.</span>
+ 219 |     | <span class='neutral'>     *</span>
+ 220 |     | <span class='neutral'>     * Requirements:</span>
+ 221 |     | <span class='neutral'>     *</span>
+ 222 |     | <span class='neutral'>     * - `from` cannot be the zero address.</span>
+ 223 |     | <span class='neutral'>     * - `to` cannot be the zero address.</span>
+ 224 |     | <span class='neutral'>     * - `from` must have a balance of at least `amount`.</span>
+ 225 |     | <span class='neutral'>     */</span>
+ 226 | *   | <span class='executed'>    function _transfer(</span>
+ 227 |     | <span class='neutral'>        address from,</span>
+ 228 |     | <span class='neutral'>        address to,</span>
+ 229 |     | <span class='neutral'>        uint256 amount</span>
+ 230 |     | <span class='neutral'>    ) internal virtual {</span>
+ 231 | *   | <span class='executed'>        require(from != address(0), &quot;ERC20: transfer from the zero address&quot;);</span>
+ 232 | *   | <span class='executed'>        require(to != address(0), &quot;ERC20: transfer to the zero address&quot;);</span>
+ 233 |     | <span class='neutral'></span>
+ 234 |     | <span class='neutral'>        _beforeTokenTransfer(from, to, amount);</span>
+ 235 |     | <span class='neutral'></span>
+ 236 | *   | <span class='executed'>        uint256 fromBalance = _balances[from];</span>
+ 237 | *   | <span class='executed'>        require(fromBalance &gt;= amount, &quot;ERC20: transfer amount exceeds balance&quot;);</span>
+ 238 |     | <span class='neutral'>        unchecked {</span>
+ 239 | *   | <span class='executed'>            _balances[from] = fromBalance - amount;</span>
+ 240 |     | <span class='neutral'>            // Overflow not possible: the sum of all balances is capped by totalSupply, and the sum is preserved by</span>
+ 241 |     | <span class='neutral'>            // decrementing then incrementing.</span>
+ 242 | *   | <span class='executed'>            _balances[to] += amount;</span>
+ 243 |     | <span class='neutral'>        }</span>
+ 244 |     | <span class='neutral'></span>
+ 245 | *   | <span class='executed'>        emit Transfer(from, to, amount);</span>
+ 246 |     | <span class='neutral'></span>
+ 247 | *   | <span class='executed'>        _afterTokenTransfer(from, to, amount);</span>
+ 248 |     | <span class='neutral'>    }</span>
+ 249 |     | <span class='neutral'></span>
+ 250 |     | <span class='neutral'>    /** @dev Creates `amount` tokens and assigns them to `account`, increasing</span>
+ 251 |     | <span class='neutral'>     * the total supply.</span>
+ 252 |     | <span class='neutral'>     *</span>
+ 253 |     | <span class='neutral'>     * Emits a {Transfer} event with `from` set to the zero address.</span>
+ 254 |     | <span class='neutral'>     *</span>
+ 255 |     | <span class='neutral'>     * Requirements:</span>
+ 256 |     | <span class='neutral'>     *</span>
+ 257 |     | <span class='neutral'>     * - `account` cannot be the zero address.</span>
+ 258 |     | <span class='neutral'>     */</span>
+ 259 |     | <span class='unexecuted'>    function _mint(address account, uint256 amount) internal virtual {</span>
+ 260 |     | <span class='unexecuted'>        require(account != address(0), &quot;ERC20: mint to the zero address&quot;);</span>
+ 261 |     | <span class='neutral'></span>
+ 262 |     | <span class='neutral'>        _beforeTokenTransfer(address(0), account, amount);</span>
+ 263 |     | <span class='neutral'></span>
+ 264 |     | <span class='unexecuted'>        _totalSupply += amount;</span>
+ 265 |     | <span class='neutral'>        unchecked {</span>
+ 266 |     | <span class='neutral'>            // Overflow not possible: balance + amount is at most totalSupply + amount, which is checked above.</span>
+ 267 |     | <span class='unexecuted'>            _balances[account] += amount;</span>
+ 268 |     | <span class='neutral'>        }</span>
+ 269 |     | <span class='unexecuted'>        emit Transfer(address(0), account, amount);</span>
+ 270 |     | <span class='neutral'></span>
+ 271 |     | <span class='neutral'>        _afterTokenTransfer(address(0), account, amount);</span>
+ 272 |     | <span class='neutral'>    }</span>
+ 273 |     | <span class='neutral'></span>
+ 274 |     | <span class='neutral'>    /**</span>
+ 275 |     | <span class='neutral'>     * @dev Destroys `amount` tokens from `account`, reducing the</span>
+ 276 |     | <span class='neutral'>     * total supply.</span>
+ 277 |     | <span class='neutral'>     *</span>
+ 278 |     | <span class='neutral'>     * Emits a {Transfer} event with `to` set to the zero address.</span>
+ 279 |     | <span class='neutral'>     *</span>
+ 280 |     | <span class='neutral'>     * Requirements:</span>
+ 281 |     | <span class='neutral'>     *</span>
+ 282 |     | <span class='neutral'>     * - `account` cannot be the zero address.</span>
+ 283 |     | <span class='neutral'>     * - `account` must have at least `amount` tokens.</span>
+ 284 |     | <span class='neutral'>     */</span>
+ 285 |     | <span class='neutral'>    function _burn(address account, uint256 amount) internal virtual {</span>
+ 286 |     | <span class='neutral'>        require(account != address(0), &quot;ERC20: burn from the zero address&quot;);</span>
+ 287 |     | <span class='neutral'></span>
+ 288 |     | <span class='neutral'>        _beforeTokenTransfer(account, address(0), amount);</span>
+ 289 |     | <span class='neutral'></span>
+ 290 |     | <span class='neutral'>        uint256 accountBalance = _balances[account];</span>
+ 291 |     | <span class='neutral'>        require(accountBalance &gt;= amount, &quot;ERC20: burn amount exceeds balance&quot;);</span>
+ 292 |     | <span class='neutral'>        unchecked {</span>
+ 293 |     | <span class='neutral'>            _balances[account] = accountBalance - amount;</span>
+ 294 |     | <span class='neutral'>            // Overflow not possible: amount &lt;= accountBalance &lt;= totalSupply.</span>
+ 295 |     | <span class='neutral'>            _totalSupply -= amount;</span>
+ 296 |     | <span class='neutral'>        }</span>
+ 297 |     | <span class='neutral'></span>
+ 298 |     | <span class='neutral'>        emit Transfer(account, address(0), amount);</span>
+ 299 |     | <span class='neutral'></span>
+ 300 |     | <span class='neutral'>        _afterTokenTransfer(account, address(0), amount);</span>
+ 301 |     | <span class='neutral'>    }</span>
+ 302 |     | <span class='neutral'></span>
+ 303 |     | <span class='neutral'>    /**</span>
+ 304 |     | <span class='neutral'>     * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.</span>
+ 305 |     | <span class='neutral'>     *</span>
+ 306 |     | <span class='neutral'>     * This internal function is equivalent to `approve`, and can be used to</span>
+ 307 |     | <span class='neutral'>     * e.g. set automatic allowances for certain subsystems, etc.</span>
+ 308 |     | <span class='neutral'>     *</span>
+ 309 |     | <span class='neutral'>     * Emits an {Approval} event.</span>
+ 310 |     | <span class='neutral'>     *</span>
+ 311 |     | <span class='neutral'>     * Requirements:</span>
+ 312 |     | <span class='neutral'>     *</span>
+ 313 |     | <span class='neutral'>     * - `owner` cannot be the zero address.</span>
+ 314 |     | <span class='neutral'>     * - `spender` cannot be the zero address.</span>
+ 315 |     | <span class='neutral'>     */</span>
+ 316 | *   | <span class='executed'>    function _approve(</span>
+ 317 |     | <span class='neutral'>        address owner,</span>
+ 318 |     | <span class='neutral'>        address spender,</span>
+ 319 |     | <span class='neutral'>        uint256 amount</span>
+ 320 |     | <span class='neutral'>    ) internal virtual {</span>
+ 321 | *   | <span class='executed'>        require(owner != address(0), &quot;ERC20: approve from the zero address&quot;);</span>
+ 322 | *   | <span class='executed'>        require(spender != address(0), &quot;ERC20: approve to the zero address&quot;);</span>
+ 323 |     | <span class='neutral'></span>
+ 324 | *   | <span class='executed'>        _allowances[owner][spender] = amount;</span>
+ 325 | *   | <span class='executed'>        emit Approval(owner, spender, amount);</span>
+ 326 |     | <span class='neutral'>    }</span>
+ 327 |     | <span class='neutral'></span>
+ 328 |     | <span class='neutral'>    /**</span>
+ 329 |     | <span class='neutral'>     * @dev Updates `owner` s allowance for `spender` based on spent `amount`.</span>
+ 330 |     | <span class='neutral'>     *</span>
+ 331 |     | <span class='neutral'>     * Does not update the allowance amount in case of infinite allowance.</span>
+ 332 |     | <span class='neutral'>     * Revert if not enough allowance is available.</span>
+ 333 |     | <span class='neutral'>     *</span>
+ 334 |     | <span class='neutral'>     * Might emit an {Approval} event.</span>
+ 335 |     | <span class='neutral'>     */</span>
+ 336 | *   | <span class='executed'>    function _spendAllowance(</span>
+ 337 |     | <span class='neutral'>        address owner,</span>
+ 338 |     | <span class='neutral'>        address spender,</span>
+ 339 |     | <span class='neutral'>        uint256 amount</span>
+ 340 | *   | <span class='executed'>    ) internal virtual {</span>
+ 341 | *   | <span class='executed'>        uint256 currentAllowance = allowance(owner, spender);</span>
+ 342 | *   | <span class='executed'>        if (currentAllowance != type(uint256).max) {</span>
+ 343 | *   | <span class='executed'>            require(currentAllowance &gt;= amount, &quot;ERC20: insufficient allowance&quot;);</span>
+ 344 |     | <span class='neutral'>            unchecked {</span>
+ 345 | *   | <span class='executed'>                _approve(owner, spender, currentAllowance - amount);</span>
+ 346 |     | <span class='neutral'>            }</span>
+ 347 |     | <span class='neutral'>        }</span>
+ 348 |     | <span class='neutral'>    }</span>
+ 349 |     | <span class='neutral'></span>
+ 350 |     | <span class='neutral'>    /**</span>
+ 351 |     | <span class='neutral'>     * @dev Hook that is called before any transfer of tokens. This includes</span>
+ 352 |     | <span class='neutral'>     * minting and burning.</span>
+ 353 |     | <span class='neutral'>     *</span>
+ 354 |     | <span class='neutral'>     * Calling conditions:</span>
+ 355 |     | <span class='neutral'>     *</span>
+ 356 |     | <span class='neutral'>     * - when `from` and `to` are both non-zero, `amount` of ``from``&#39;s tokens</span>
+ 357 |     | <span class='neutral'>     * will be transferred to `to`.</span>
+ 358 |     | <span class='neutral'>     * - when `from` is zero, `amount` tokens will be minted for `to`.</span>
+ 359 |     | <span class='neutral'>     * - when `to` is zero, `amount` of ``from``&#39;s tokens will be burned.</span>
+ 360 |     | <span class='neutral'>     * - `from` and `to` are never both zero.</span>
+ 361 |     | <span class='neutral'>     *</span>
+ 362 |     | <span class='neutral'>     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].</span>
+ 363 |     | <span class='neutral'>     */</span>
+ 364 | *   | <span class='executed'>    function _beforeTokenTransfer(</span>
+ 365 |     | <span class='neutral'>        address from,</span>
+ 366 |     | <span class='neutral'>        address to,</span>
+ 367 |     | <span class='neutral'>        uint256 amount</span>
+ 368 |     | <span class='neutral'>    ) internal virtual {}</span>
+ 369 |     | <span class='neutral'></span>
+ 370 |     | <span class='neutral'>    /**</span>
+ 371 |     | <span class='neutral'>     * @dev Hook that is called after any transfer of tokens. This includes</span>
+ 372 |     | <span class='neutral'>     * minting and burning.</span>
+ 373 |     | <span class='neutral'>     *</span>
+ 374 |     | <span class='neutral'>     * Calling conditions:</span>
+ 375 |     | <span class='neutral'>     *</span>
+ 376 |     | <span class='neutral'>     * - when `from` and `to` are both non-zero, `amount` of ``from``&#39;s tokens</span>
+ 377 |     | <span class='neutral'>     * has been transferred to `to`.</span>
+ 378 |     | <span class='neutral'>     * - when `from` is zero, `amount` tokens have been minted for `to`.</span>
+ 379 |     | <span class='neutral'>     * - when `to` is zero, `amount` of ``from``&#39;s tokens have been burned.</span>
+ 380 |     | <span class='neutral'>     * - `from` and `to` are never both zero.</span>
+ 381 |     | <span class='neutral'>     *</span>
+ 382 |     | <span class='neutral'>     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].</span>
+ 383 |     | <span class='neutral'>     */</span>
+ 384 |     | <span class='neutral'>    function _afterTokenTransfer(</span>
+ 385 |     | <span class='neutral'>        address from,</span>
+ 386 |     | <span class='neutral'>        address to,</span>
+ 387 |     | <span class='neutral'>        uint256 amount</span>
+ 388 |     | <span class='neutral'>    ) internal virtual {}</span>
+ 389 |     | <span class='neutral'>}</span>
+ 390 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>/**</span>
+  7 |     | <span class='neutral'> * @dev Interface of the ERC20 standard as defined in the EIP.</span>
+  8 |     | <span class='neutral'> */</span>
+  9 |     | <span class='neutral'>interface IERC20 {</span>
+ 10 |     | <span class='neutral'>    /**</span>
+ 11 |     | <span class='neutral'>     * @dev Emitted when `value` tokens are moved from one account (`from`) to</span>
+ 12 |     | <span class='neutral'>     * another (`to`).</span>
+ 13 |     | <span class='neutral'>     *</span>
+ 14 |     | <span class='neutral'>     * Note that `value` may be zero.</span>
+ 15 |     | <span class='neutral'>     */</span>
+ 16 |     | <span class='neutral'>    event Transfer(address indexed from, address indexed to, uint256 value);</span>
+ 17 |     | <span class='neutral'></span>
+ 18 |     | <span class='neutral'>    /**</span>
+ 19 |     | <span class='neutral'>     * @dev Emitted when the allowance of a `spender` for an `owner` is set by</span>
+ 20 |     | <span class='neutral'>     * a call to {approve}. `value` is the new allowance.</span>
+ 21 |     | <span class='neutral'>     */</span>
+ 22 |     | <span class='neutral'>    event Approval(address indexed owner, address indexed spender, uint256 value);</span>
+ 23 |     | <span class='neutral'></span>
+ 24 |     | <span class='neutral'>    /**</span>
+ 25 |     | <span class='neutral'>     * @dev Returns the amount of tokens in existence.</span>
+ 26 |     | <span class='neutral'>     */</span>
+ 27 |     | <span class='neutral'>    function totalSupply() external view returns (uint256);</span>
+ 28 |     | <span class='neutral'></span>
+ 29 |     | <span class='neutral'>    /**</span>
+ 30 |     | <span class='neutral'>     * @dev Returns the amount of tokens owned by `account`.</span>
+ 31 |     | <span class='neutral'>     */</span>
+ 32 |     | <span class='neutral'>    function balanceOf(address account) external view returns (uint256);</span>
+ 33 |     | <span class='neutral'></span>
+ 34 |     | <span class='neutral'>    /**</span>
+ 35 |     | <span class='neutral'>     * @dev Moves `amount` tokens from the caller&#39;s account to `to`.</span>
+ 36 |     | <span class='neutral'>     *</span>
+ 37 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 38 |     | <span class='neutral'>     *</span>
+ 39 |     | <span class='neutral'>     * Emits a {Transfer} event.</span>
+ 40 |     | <span class='neutral'>     */</span>
+ 41 |     | <span class='neutral'>    function transfer(address to, uint256 amount) external returns (bool);</span>
+ 42 |     | <span class='neutral'></span>
+ 43 |     | <span class='neutral'>    /**</span>
+ 44 |     | <span class='neutral'>     * @dev Returns the remaining number of tokens that `spender` will be</span>
+ 45 |     | <span class='neutral'>     * allowed to spend on behalf of `owner` through {transferFrom}. This is</span>
+ 46 |     | <span class='neutral'>     * zero by default.</span>
+ 47 |     | <span class='neutral'>     *</span>
+ 48 |     | <span class='neutral'>     * This value changes when {approve} or {transferFrom} are called.</span>
+ 49 |     | <span class='neutral'>     */</span>
+ 50 |     | <span class='neutral'>    function allowance(address owner, address spender) external view returns (uint256);</span>
+ 51 |     | <span class='neutral'></span>
+ 52 |     | <span class='neutral'>    /**</span>
+ 53 |     | <span class='neutral'>     * @dev Sets `amount` as the allowance of `spender` over the caller&#39;s tokens.</span>
+ 54 |     | <span class='neutral'>     *</span>
+ 55 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 56 |     | <span class='neutral'>     *</span>
+ 57 |     | <span class='neutral'>     * IMPORTANT: Beware that changing an allowance with this method brings the risk</span>
+ 58 |     | <span class='neutral'>     * that someone may use both the old and the new allowance by unfortunate</span>
+ 59 |     | <span class='neutral'>     * transaction ordering. One possible solution to mitigate this race</span>
+ 60 |     | <span class='neutral'>     * condition is to first reduce the spender&#39;s allowance to 0 and set the</span>
+ 61 |     | <span class='neutral'>     * desired value afterwards:</span>
+ 62 |     | <span class='neutral'>     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729</span>
+ 63 |     | <span class='neutral'>     *</span>
+ 64 |     | <span class='neutral'>     * Emits an {Approval} event.</span>
+ 65 |     | <span class='neutral'>     */</span>
+ 66 |     | <span class='neutral'>    function approve(address spender, uint256 amount) external returns (bool);</span>
+ 67 |     | <span class='neutral'></span>
+ 68 |     | <span class='neutral'>    /**</span>
+ 69 |     | <span class='neutral'>     * @dev Moves `amount` tokens from `from` to `to` using the</span>
+ 70 |     | <span class='neutral'>     * allowance mechanism. `amount` is then deducted from the caller&#39;s</span>
+ 71 |     | <span class='neutral'>     * allowance.</span>
+ 72 |     | <span class='neutral'>     *</span>
+ 73 |     | <span class='neutral'>     * Returns a boolean value indicating whether the operation succeeded.</span>
+ 74 |     | <span class='neutral'>     *</span>
+ 75 |     | <span class='neutral'>     * Emits a {Transfer} event.</span>
+ 76 |     | <span class='neutral'>     */</span>
+ 77 |     | <span class='neutral'>    function transferFrom(</span>
+ 78 |     | <span class='neutral'>        address from,</span>
+ 79 |     | <span class='neutral'>        address to,</span>
+ 80 |     | <span class='neutral'>        uint256 amount</span>
+ 81 |     | <span class='neutral'>    ) external returns (bool);</span>
+ 82 |     | <span class='neutral'>}</span>
+ 83 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/IERC20Metadata.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>import &quot;../IERC20.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 |     | <span class='neutral'>/**</span>
+  9 |     | <span class='neutral'> * @dev Interface for the optional metadata functions from the ERC20 standard.</span>
+ 10 |     | <span class='neutral'> *</span>
+ 11 |     | <span class='neutral'> * _Available since v4.1._</span>
+ 12 |     | <span class='neutral'> */</span>
+ 13 |     | <span class='neutral'>interface IERC20Metadata is IERC20 {</span>
+ 14 |     | <span class='neutral'>    /**</span>
+ 15 |     | <span class='neutral'>     * @dev Returns the name of the token.</span>
+ 16 |     | <span class='neutral'>     */</span>
+ 17 |     | <span class='neutral'>    function name() external view returns (string memory);</span>
+ 18 |     | <span class='neutral'></span>
+ 19 |     | <span class='neutral'>    /**</span>
+ 20 |     | <span class='neutral'>     * @dev Returns the symbol of the token.</span>
+ 21 |     | <span class='neutral'>     */</span>
+ 22 |     | <span class='neutral'>    function symbol() external view returns (string memory);</span>
+ 23 |     | <span class='neutral'></span>
+ 24 |     | <span class='neutral'>    /**</span>
+ 25 |     | <span class='neutral'>     * @dev Returns the decimals places of the token.</span>
+ 26 |     | <span class='neutral'>     */</span>
+ 27 |     | <span class='neutral'>    function decimals() external view returns (uint8);</span>
+ 28 |     | <span class='neutral'>}</span>
+ 29 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/utils/Context.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+  5 |     | <span class='neutral'></span>
+  6 |     | <span class='neutral'>/**</span>
+  7 |     | <span class='neutral'> * @dev Provides information about the current execution context, including the</span>
+  8 |     | <span class='neutral'> * sender of the transaction and its data. While these are generally available</span>
+  9 |     | <span class='neutral'> * via msg.sender and msg.data, they should not be accessed in such a direct</span>
+ 10 |     | <span class='neutral'> * manner, since when dealing with meta-transactions the account sending and</span>
+ 11 |     | <span class='neutral'> * paying for execution may not be the actual sender (as far as an application</span>
+ 12 |     | <span class='neutral'> * is concerned).</span>
+ 13 |     | <span class='neutral'> *</span>
+ 14 |     | <span class='neutral'> * This contract is only required for intermediate, library-like contracts.</span>
+ 15 |     | <span class='neutral'> */</span>
+ 16 |     | <span class='neutral'>abstract contract Context {</span>
+ 17 |     | <span class='neutral'>    function _msgSender() internal view virtual returns (address) {</span>
+ 18 | *   | <span class='executed'>        return msg.sender;</span>
+ 19 |     | <span class='neutral'>    }</span>
+ 20 |     | <span class='neutral'></span>
+ 21 |     | <span class='neutral'>    function _msgData() internal view virtual returns (bytes calldata) {</span>
+ 22 |     | <span class='neutral'>        return msg.data;</span>
+ 23 |     | <span class='neutral'>    }</span>
+ 24 |     | <span class='neutral'>}</span>
+ 25 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/lib/openzeppelin-contracts/contracts/utils/math/SafeMath.sol</b>
+<code>
+   1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+   2 |     | <span class='neutral'>// OpenZeppelin Contracts (last updated v4.6.0) (utils/math/SafeMath.sol)</span>
+   3 |     | <span class='neutral'></span>
+   4 |     | <span class='neutral'>pragma solidity ^0.8.0;</span>
+   5 |     | <span class='neutral'></span>
+   6 |     | <span class='neutral'>// CAUTION</span>
+   7 |     | <span class='neutral'>// This version of SafeMath should only be used with Solidity 0.8 or later,</span>
+   8 |     | <span class='neutral'>// because it relies on the compiler&#39;s built in overflow checks.</span>
+   9 |     | <span class='neutral'></span>
+  10 |     | <span class='neutral'>/**</span>
+  11 |     | <span class='neutral'> * @dev Wrappers over Solidity&#39;s arithmetic operations.</span>
+  12 |     | <span class='neutral'> *</span>
+  13 |     | <span class='neutral'> * NOTE: `SafeMath` is generally not needed starting with Solidity 0.8, since the compiler</span>
+  14 |     | <span class='neutral'> * now has built in overflow checking.</span>
+  15 |     | <span class='neutral'> */</span>
+  16 |     | <span class='unexecuted'>library SafeMath {</span>
+  17 |     | <span class='neutral'>    /**</span>
+  18 |     | <span class='neutral'>     * @dev Returns the addition of two unsigned integers, with an overflow flag.</span>
+  19 |     | <span class='neutral'>     *</span>
+  20 |     | <span class='neutral'>     * _Available since v3.4._</span>
+  21 |     | <span class='neutral'>     */</span>
+  22 |     | <span class='neutral'>    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {</span>
+  23 |     | <span class='neutral'>        unchecked {</span>
+  24 |     | <span class='neutral'>            uint256 c = a + b;</span>
+  25 |     | <span class='neutral'>            if (c &lt; a) return (false, 0);</span>
+  26 |     | <span class='neutral'>            return (true, c);</span>
+  27 |     | <span class='neutral'>        }</span>
+  28 |     | <span class='neutral'>    }</span>
+  29 |     | <span class='neutral'></span>
+  30 |     | <span class='neutral'>    /**</span>
+  31 |     | <span class='neutral'>     * @dev Returns the subtraction of two unsigned integers, with an overflow flag.</span>
+  32 |     | <span class='neutral'>     *</span>
+  33 |     | <span class='neutral'>     * _Available since v3.4._</span>
+  34 |     | <span class='neutral'>     */</span>
+  35 |     | <span class='neutral'>    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {</span>
+  36 |     | <span class='neutral'>        unchecked {</span>
+  37 |     | <span class='neutral'>            if (b &gt; a) return (false, 0);</span>
+  38 |     | <span class='neutral'>            return (true, a - b);</span>
+  39 |     | <span class='neutral'>        }</span>
+  40 |     | <span class='neutral'>    }</span>
+  41 |     | <span class='neutral'></span>
+  42 |     | <span class='neutral'>    /**</span>
+  43 |     | <span class='neutral'>     * @dev Returns the multiplication of two unsigned integers, with an overflow flag.</span>
+  44 |     | <span class='neutral'>     *</span>
+  45 |     | <span class='neutral'>     * _Available since v3.4._</span>
+  46 |     | <span class='neutral'>     */</span>
+  47 |     | <span class='neutral'>    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {</span>
+  48 |     | <span class='neutral'>        unchecked {</span>
+  49 |     | <span class='neutral'>            // Gas optimization: this is cheaper than requiring &#39;a&#39; not being zero, but the</span>
+  50 |     | <span class='neutral'>            // benefit is lost if &#39;b&#39; is also tested.</span>
+  51 |     | <span class='neutral'>            // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522</span>
+  52 |     | <span class='neutral'>            if (a == 0) return (true, 0);</span>
+  53 |     | <span class='neutral'>            uint256 c = a * b;</span>
+  54 |     | <span class='neutral'>            if (c / a != b) return (false, 0);</span>
+  55 |     | <span class='neutral'>            return (true, c);</span>
+  56 |     | <span class='neutral'>        }</span>
+  57 |     | <span class='neutral'>    }</span>
+  58 |     | <span class='neutral'></span>
+  59 |     | <span class='neutral'>    /**</span>
+  60 |     | <span class='neutral'>     * @dev Returns the division of two unsigned integers, with a division by zero flag.</span>
+  61 |     | <span class='neutral'>     *</span>
+  62 |     | <span class='neutral'>     * _Available since v3.4._</span>
+  63 |     | <span class='neutral'>     */</span>
+  64 |     | <span class='neutral'>    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {</span>
+  65 |     | <span class='neutral'>        unchecked {</span>
+  66 |     | <span class='neutral'>            if (b == 0) return (false, 0);</span>
+  67 |     | <span class='neutral'>            return (true, a / b);</span>
+  68 |     | <span class='neutral'>        }</span>
+  69 |     | <span class='neutral'>    }</span>
+  70 |     | <span class='neutral'></span>
+  71 |     | <span class='neutral'>    /**</span>
+  72 |     | <span class='neutral'>     * @dev Returns the remainder of dividing two unsigned integers, with a division by zero flag.</span>
+  73 |     | <span class='neutral'>     *</span>
+  74 |     | <span class='neutral'>     * _Available since v3.4._</span>
+  75 |     | <span class='neutral'>     */</span>
+  76 |     | <span class='neutral'>    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {</span>
+  77 |     | <span class='neutral'>        unchecked {</span>
+  78 |     | <span class='neutral'>            if (b == 0) return (false, 0);</span>
+  79 |     | <span class='neutral'>            return (true, a % b);</span>
+  80 |     | <span class='neutral'>        }</span>
+  81 |     | <span class='neutral'>    }</span>
+  82 |     | <span class='neutral'></span>
+  83 |     | <span class='neutral'>    /**</span>
+  84 |     | <span class='neutral'>     * @dev Returns the addition of two unsigned integers, reverting on</span>
+  85 |     | <span class='neutral'>     * overflow.</span>
+  86 |     | <span class='neutral'>     *</span>
+  87 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `+` operator.</span>
+  88 |     | <span class='neutral'>     *</span>
+  89 |     | <span class='neutral'>     * Requirements:</span>
+  90 |     | <span class='neutral'>     *</span>
+  91 |     | <span class='neutral'>     * - Addition cannot overflow.</span>
+  92 |     | <span class='neutral'>     */</span>
+  93 |     | <span class='neutral'>    function add(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+  94 |     | <span class='neutral'>        return a + b;</span>
+  95 |     | <span class='neutral'>    }</span>
+  96 |     | <span class='neutral'></span>
+  97 |     | <span class='neutral'>    /**</span>
+  98 |     | <span class='neutral'>     * @dev Returns the subtraction of two unsigned integers, reverting on</span>
+  99 |     | <span class='neutral'>     * overflow (when the result is negative).</span>
+ 100 |     | <span class='neutral'>     *</span>
+ 101 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `-` operator.</span>
+ 102 |     | <span class='neutral'>     *</span>
+ 103 |     | <span class='neutral'>     * Requirements:</span>
+ 104 |     | <span class='neutral'>     *</span>
+ 105 |     | <span class='neutral'>     * - Subtraction cannot overflow.</span>
+ 106 |     | <span class='neutral'>     */</span>
+ 107 |     | <span class='neutral'>    function sub(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 108 |     | <span class='neutral'>        return a - b;</span>
+ 109 |     | <span class='neutral'>    }</span>
+ 110 |     | <span class='neutral'></span>
+ 111 |     | <span class='neutral'>    /**</span>
+ 112 |     | <span class='neutral'>     * @dev Returns the multiplication of two unsigned integers, reverting on</span>
+ 113 |     | <span class='neutral'>     * overflow.</span>
+ 114 |     | <span class='neutral'>     *</span>
+ 115 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `*` operator.</span>
+ 116 |     | <span class='neutral'>     *</span>
+ 117 |     | <span class='neutral'>     * Requirements:</span>
+ 118 |     | <span class='neutral'>     *</span>
+ 119 |     | <span class='neutral'>     * - Multiplication cannot overflow.</span>
+ 120 |     | <span class='neutral'>     */</span>
+ 121 |     | <span class='neutral'>    function mul(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 122 |     | <span class='neutral'>        return a * b;</span>
+ 123 |     | <span class='neutral'>    }</span>
+ 124 |     | <span class='neutral'></span>
+ 125 |     | <span class='neutral'>    /**</span>
+ 126 |     | <span class='neutral'>     * @dev Returns the integer division of two unsigned integers, reverting on</span>
+ 127 |     | <span class='neutral'>     * division by zero. The result is rounded towards zero.</span>
+ 128 |     | <span class='neutral'>     *</span>
+ 129 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `/` operator.</span>
+ 130 |     | <span class='neutral'>     *</span>
+ 131 |     | <span class='neutral'>     * Requirements:</span>
+ 132 |     | <span class='neutral'>     *</span>
+ 133 |     | <span class='neutral'>     * - The divisor cannot be zero.</span>
+ 134 |     | <span class='neutral'>     */</span>
+ 135 |     | <span class='neutral'>    function div(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 136 |     | <span class='neutral'>        return a / b;</span>
+ 137 |     | <span class='neutral'>    }</span>
+ 138 |     | <span class='neutral'></span>
+ 139 |     | <span class='neutral'>    /**</span>
+ 140 |     | <span class='neutral'>     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),</span>
+ 141 |     | <span class='neutral'>     * reverting when dividing by zero.</span>
+ 142 |     | <span class='neutral'>     *</span>
+ 143 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `%` operator. This function uses a `revert`</span>
+ 144 |     | <span class='neutral'>     * opcode (which leaves remaining gas untouched) while Solidity uses an</span>
+ 145 |     | <span class='neutral'>     * invalid opcode to revert (consuming all remaining gas).</span>
+ 146 |     | <span class='neutral'>     *</span>
+ 147 |     | <span class='neutral'>     * Requirements:</span>
+ 148 |     | <span class='neutral'>     *</span>
+ 149 |     | <span class='neutral'>     * - The divisor cannot be zero.</span>
+ 150 |     | <span class='neutral'>     */</span>
+ 151 |     | <span class='neutral'>    function mod(uint256 a, uint256 b) internal pure returns (uint256) {</span>
+ 152 |     | <span class='neutral'>        return a % b;</span>
+ 153 |     | <span class='neutral'>    }</span>
+ 154 |     | <span class='neutral'></span>
+ 155 |     | <span class='neutral'>    /**</span>
+ 156 |     | <span class='neutral'>     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on</span>
+ 157 |     | <span class='neutral'>     * overflow (when the result is negative).</span>
+ 158 |     | <span class='neutral'>     *</span>
+ 159 |     | <span class='neutral'>     * CAUTION: This function is deprecated because it requires allocating memory for the error</span>
+ 160 |     | <span class='neutral'>     * message unnecessarily. For custom revert reasons use {trySub}.</span>
+ 161 |     | <span class='neutral'>     *</span>
+ 162 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `-` operator.</span>
+ 163 |     | <span class='neutral'>     *</span>
+ 164 |     | <span class='neutral'>     * Requirements:</span>
+ 165 |     | <span class='neutral'>     *</span>
+ 166 |     | <span class='neutral'>     * - Subtraction cannot overflow.</span>
+ 167 |     | <span class='neutral'>     */</span>
+ 168 |     | <span class='neutral'>    function sub(</span>
+ 169 |     | <span class='neutral'>        uint256 a,</span>
+ 170 |     | <span class='neutral'>        uint256 b,</span>
+ 171 |     | <span class='neutral'>        string memory errorMessage</span>
+ 172 |     | <span class='neutral'>    ) internal pure returns (uint256) {</span>
+ 173 |     | <span class='neutral'>        unchecked {</span>
+ 174 |     | <span class='neutral'>            require(b &lt;= a, errorMessage);</span>
+ 175 |     | <span class='neutral'>            return a - b;</span>
+ 176 |     | <span class='neutral'>        }</span>
+ 177 |     | <span class='neutral'>    }</span>
+ 178 |     | <span class='neutral'></span>
+ 179 |     | <span class='neutral'>    /**</span>
+ 180 |     | <span class='neutral'>     * @dev Returns the integer division of two unsigned integers, reverting with custom message on</span>
+ 181 |     | <span class='neutral'>     * division by zero. The result is rounded towards zero.</span>
+ 182 |     | <span class='neutral'>     *</span>
+ 183 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `/` operator. Note: this function uses a</span>
+ 184 |     | <span class='neutral'>     * `revert` opcode (which leaves remaining gas untouched) while Solidity</span>
+ 185 |     | <span class='neutral'>     * uses an invalid opcode to revert (consuming all remaining gas).</span>
+ 186 |     | <span class='neutral'>     *</span>
+ 187 |     | <span class='neutral'>     * Requirements:</span>
+ 188 |     | <span class='neutral'>     *</span>
+ 189 |     | <span class='neutral'>     * - The divisor cannot be zero.</span>
+ 190 |     | <span class='neutral'>     */</span>
+ 191 |     | <span class='neutral'>    function div(</span>
+ 192 |     | <span class='neutral'>        uint256 a,</span>
+ 193 |     | <span class='neutral'>        uint256 b,</span>
+ 194 |     | <span class='neutral'>        string memory errorMessage</span>
+ 195 |     | <span class='neutral'>    ) internal pure returns (uint256) {</span>
+ 196 |     | <span class='neutral'>        unchecked {</span>
+ 197 |     | <span class='neutral'>            require(b &gt; 0, errorMessage);</span>
+ 198 |     | <span class='neutral'>            return a / b;</span>
+ 199 |     | <span class='neutral'>        }</span>
+ 200 |     | <span class='neutral'>    }</span>
+ 201 |     | <span class='neutral'></span>
+ 202 |     | <span class='neutral'>    /**</span>
+ 203 |     | <span class='neutral'>     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),</span>
+ 204 |     | <span class='neutral'>     * reverting with custom message when dividing by zero.</span>
+ 205 |     | <span class='neutral'>     *</span>
+ 206 |     | <span class='neutral'>     * CAUTION: This function is deprecated because it requires allocating memory for the error</span>
+ 207 |     | <span class='neutral'>     * message unnecessarily. For custom revert reasons use {tryMod}.</span>
+ 208 |     | <span class='neutral'>     *</span>
+ 209 |     | <span class='neutral'>     * Counterpart to Solidity&#39;s `%` operator. This function uses a `revert`</span>
+ 210 |     | <span class='neutral'>     * opcode (which leaves remaining gas untouched) while Solidity uses an</span>
+ 211 |     | <span class='neutral'>     * invalid opcode to revert (consuming all remaining gas).</span>
+ 212 |     | <span class='neutral'>     *</span>
+ 213 |     | <span class='neutral'>     * Requirements:</span>
+ 214 |     | <span class='neutral'>     *</span>
+ 215 |     | <span class='neutral'>     * - The divisor cannot be zero.</span>
+ 216 |     | <span class='neutral'>     */</span>
+ 217 |     | <span class='neutral'>    function mod(</span>
+ 218 |     | <span class='neutral'>        uint256 a,</span>
+ 219 |     | <span class='neutral'>        uint256 b,</span>
+ 220 |     | <span class='neutral'>        string memory errorMessage</span>
+ 221 |     | <span class='neutral'>    ) internal pure returns (uint256) {</span>
+ 222 |     | <span class='neutral'>        unchecked {</span>
+ 223 |     | <span class='neutral'>            require(b &gt; 0, errorMessage);</span>
+ 224 |     | <span class='neutral'>            return a % b;</span>
+ 225 |     | <span class='neutral'>        }</span>
+ 226 |     | <span class='neutral'>    }</span>
+ 227 |     | <span class='neutral'>}</span>
+ 228 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/src/BaseLevel.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'></span>
+  3 |     | <span class='neutral'>pragma solidity ^0.8.14;</span>
+  4 |     | <span class='neutral'></span>
+  5 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/access/Ownable.sol&quot;;</span>
+  6 |     | <span class='neutral'></span>
+  7 |     | <span class='neutral'>abstract contract Level is Ownable {</span>
+  8 |     | <span class='neutral'>    function createInstance(address _player)</span>
+  9 |     | <span class='neutral'>        public</span>
+ 10 |     | <span class='neutral'>        payable</span>
+ 11 |     | <span class='neutral'>        virtual</span>
+ 12 |     | <span class='neutral'>        returns (address);</span>
+ 13 |     | <span class='neutral'></span>
+ 14 |     | <span class='neutral'>    function validateInstance(address payable _instance, address _player)</span>
+ 15 |     | <span class='neutral'>        public</span>
+ 16 |     | <span class='neutral'>        virtual</span>
+ 17 |     | <span class='neutral'>        returns (bool);</span>
+ 18 |     | <span class='neutral'>}</span>
+ 19 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/src/Dex/Dex.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'>pragma solidity ^0.8.14;</span>
+  3 |     | <span class='neutral'></span>
+  4 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/token/ERC20/IERC20.sol&quot;;</span>
+  5 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/token/ERC20/ERC20.sol&quot;;</span>
+  6 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/utils/math/SafeMath.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 | *   | <span class='executed'>contract Dex {</span>
+  9 |     | <span class='neutral'>    using SafeMath for uint;</span>
+ 10 |     | <span class='unexecuted'>    address public token1;</span>
+ 11 |     | <span class='unexecuted'>    address public token2;</span>
+ 12 |     | <span class='neutral'></span>
+ 13 |     | <span class='unexecuted'>    constructor(address _token1, address _token2) public {</span>
+ 14 |     | <span class='unexecuted'>        token1 = _token1;</span>
+ 15 |     | <span class='unexecuted'>        token2 = _token2;</span>
+ 16 |     | <span class='neutral'>    }</span>
+ 17 |     | <span class='neutral'></span>
+ 18 | *   | <span class='executed'>    function swap(</span>
+ 19 |     | <span class='neutral'>        address from,</span>
+ 20 |     | <span class='neutral'>        address to,</span>
+ 21 |     | <span class='neutral'>        uint amount</span>
+ 22 | *   | <span class='executed'>    ) public {</span>
+ 23 | *   | <span class='executed'>        require(</span>
+ 24 | *   | <span class='executed'>            (from == token1 &amp;&amp; to == token2) ||</span>
+ 25 | *   | <span class='executed'>                (from == token2 &amp;&amp; to == token1),</span>
+ 26 |     | <span class='neutral'>            &quot;Invalid tokens&quot;</span>
+ 27 |     | <span class='neutral'>        );</span>
+ 28 | *   | <span class='executed'>        require(</span>
+ 29 | *   | <span class='executed'>            IERC20(from).balanceOf(msg.sender) &gt;= amount,</span>
+ 30 |     | <span class='neutral'>            &quot;Not enough to swap&quot;</span>
+ 31 |     | <span class='neutral'>        );</span>
+ 32 | *   | <span class='executed'>        uint swap_amount = get_swap_price(from, to, amount);</span>
+ 33 | *   | <span class='executed'>        IERC20(from).transferFrom(msg.sender, address(this), amount);</span>
+ 34 | *   | <span class='executed'>        IERC20(to).approve(address(this), swap_amount);</span>
+ 35 | *   | <span class='executed'>        IERC20(to).transferFrom(address(this), msg.sender, swap_amount);</span>
+ 36 |     | <span class='neutral'>    }</span>
+ 37 |     | <span class='neutral'></span>
+ 38 | *   | <span class='executed'>    function add_liquidity(address token_address, uint amount) public {</span>
+ 39 | *   | <span class='executed'>        IERC20(token_address).transferFrom(msg.sender, address(this), amount);</span>
+ 40 |     | <span class='neutral'>    }</span>
+ 41 |     | <span class='neutral'></span>
+ 42 | *   | <span class='executed'>    function get_swap_price(</span>
+ 43 |     | <span class='neutral'>        address from,</span>
+ 44 |     | <span class='neutral'>        address to,</span>
+ 45 |     | <span class='neutral'>        uint amount</span>
+ 46 | *   | <span class='executed'>    ) public view returns (uint) {</span>
+ 47 | *   | <span class='executed'>        return ((amount * IERC20(to).balanceOf(address(this))) /</span>
+ 48 | *   | <span class='executed'>            IERC20(from).balanceOf(address(this)));</span>
+ 49 |     | <span class='neutral'>    }</span>
+ 50 |     | <span class='neutral'></span>
+ 51 | *   | <span class='executed'>    function approve(address spender, uint amount) public {</span>
+ 52 |     | <span class='unexecuted'>        SwappableToken(token1).approve(spender, amount);</span>
+ 53 | *   | <span class='executed'>        SwappableToken(token2).approve(spender, amount);</span>
+ 54 |     | <span class='neutral'>    }</span>
+ 55 |     | <span class='neutral'></span>
+ 56 | *   | <span class='executed'>    function balanceOf(address token, address account)</span>
+ 57 |     | <span class='neutral'>        public</span>
+ 58 |     | <span class='neutral'>        view</span>
+ 59 |     | <span class='unexecuted'>        returns (uint)</span>
+ 60 |     | <span class='neutral'>    {</span>
+ 61 |     | <span class='unexecuted'>        return IERC20(token).balanceOf(account);</span>
+ 62 |     | <span class='neutral'>    }</span>
+ 63 |     | <span class='neutral'>}</span>
+ 64 |     | <span class='neutral'></span>
+ 65 | *   | <span class='executed'>contract SwappableToken is ERC20 {</span>
+ 66 |     | <span class='unexecuted'>    constructor(</span>
+ 67 |     | <span class='neutral'>        string memory name,</span>
+ 68 |     | <span class='neutral'>        string memory symbol,</span>
+ 69 |     | <span class='neutral'>        uint initialSupply</span>
+ 70 |     | <span class='unexecuted'>    ) public ERC20(name, symbol) {</span>
+ 71 |     | <span class='unexecuted'>        _mint(msg.sender, initialSupply);</span>
+ 72 |     | <span class='neutral'>    }</span>
+ 73 |     | <span class='neutral'>}</span>
+ 74 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/src/Dex/DexFactory.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'></span>
+  3 |     | <span class='neutral'>pragma solidity ^0.8.14;</span>
+  4 |     | <span class='neutral'></span>
+  5 |     | <span class='neutral'>import &#39;../BaseLevel.sol&#39;;</span>
+  6 |     | <span class='neutral'>import &#39;./Dex.sol&#39;;</span>
+  7 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/token/ERC20/ERC20.sol&quot;;</span>
+  8 |     | <span class='neutral'></span>
+  9 |     | <span class='neutral'></span>
+ 10 |     | <span class='unexecuted'>contract DexFactory is Level {</span>
+ 11 |     | <span class='neutral'></span>
+ 12 |     | <span class='unexecuted'>  function createInstance(address _player) override public payable returns (address) {</span>
+ 13 |     | <span class='unexecuted'>    SwappableToken token_instance = new SwappableToken(&quot;Token 1&quot;, &quot;TKN1&quot;, 110);</span>
+ 14 |     | <span class='unexecuted'>    SwappableToken token_instance_two = new SwappableToken(&quot;Token 2&quot;, &quot;TKN2&quot;, 110);</span>
+ 15 |     | <span class='unexecuted'>    address token_instance_address = address(token_instance);</span>
+ 16 |     | <span class='unexecuted'>    address token_instance_two_address = address(token_instance_two);</span>
+ 17 |     | <span class='unexecuted'>    Dex instance = new Dex(token_instance_address, token_instance_two_address);</span>
+ 18 |     | <span class='neutral'></span>
+ 19 |     | <span class='unexecuted'>    token_instance.approve(address(instance), 100);</span>
+ 20 |     | <span class='unexecuted'>    token_instance_two.approve(address(instance), 100);</span>
+ 21 |     | <span class='unexecuted'>    instance.add_liquidity(address(token_instance), 100);</span>
+ 22 |     | <span class='unexecuted'>    instance.add_liquidity(address(token_instance_two), 100);</span>
+ 23 |     | <span class='unexecuted'>    token_instance.transfer(_player, 10);</span>
+ 24 |     | <span class='unexecuted'>    token_instance_two.transfer(_player, 10);</span>
+ 25 |     | <span class='unexecuted'>    return address(instance);</span>
+ 26 |     | <span class='neutral'>  }</span>
+ 27 |     | <span class='neutral'></span>
+ 28 |     | <span class='unexecuted'>  function validateInstance(address payable _instance, address) override public returns (bool) {</span>
+ 29 |     | <span class='unexecuted'>    address token1 = Dex(_instance).token1();</span>
+ 30 |     | <span class='unexecuted'>    address token2 = Dex(_instance).token2();</span>
+ 31 |     | <span class='unexecuted'>    return IERC20(token1).balanceOf(_instance) == 0 || ERC20(token2).balanceOf(_instance) == 0;</span>
+ 32 |     | <span class='neutral'>  }</span>
+ 33 |     | <span class='neutral'>}</span>
+ 34 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
+<b>/root/rareskills-solidity/Foundry-ethernaut-solutions/src/Ethernaut.sol</b>
+<code>
+  1 |     | <span class='neutral'>// SPDX-License-Identifier: MIT</span>
+  2 |     | <span class='neutral'></span>
+  3 |     | <span class='neutral'>pragma solidity ^0.8.14;</span>
+  4 |     | <span class='neutral'></span>
+  5 |     | <span class='neutral'>import &quot;./BaseLevel.sol&quot;;</span>
+  6 |     | <span class='neutral'>import &quot;openzeppelin-contracts/contracts/access/Ownable.sol&quot;;</span>
+  7 |     | <span class='neutral'></span>
+  8 |     | <span class='unexecuted'>contract Ethernaut is Ownable {</span>
+  9 |     | <span class='neutral'>    // ----------------------------------</span>
+ 10 |     | <span class='neutral'>    // Owner interaction</span>
+ 11 |     | <span class='neutral'>    // ----------------------------------</span>
+ 12 |     | <span class='neutral'></span>
+ 13 |     | <span class='neutral'>    mapping(address =&gt; bool) registeredLevels;</span>
+ 14 |     | <span class='neutral'></span>
+ 15 |     | <span class='neutral'>    // Only registered levels will be allowed to generate and validate level instances.</span>
+ 16 |     | <span class='unexecuted'>    function registerLevel(Level _level) public onlyOwner {</span>
+ 17 |     | <span class='unexecuted'>        registeredLevels[address(_level)] = true;</span>
+ 18 |     | <span class='neutral'>    }</span>
+ 19 |     | <span class='neutral'></span>
+ 20 |     | <span class='neutral'>    // ----------------------------------</span>
+ 21 |     | <span class='neutral'>    // Get/submit level instances</span>
+ 22 |     | <span class='neutral'>    // ----------------------------------</span>
+ 23 |     | <span class='neutral'></span>
+ 24 |     | <span class='neutral'>    struct EmittedInstanceData {</span>
+ 25 |     | <span class='neutral'>        address player;</span>
+ 26 |     | <span class='neutral'>        Level level;</span>
+ 27 |     | <span class='neutral'>        bool completed;</span>
+ 28 |     | <span class='neutral'>    }</span>
+ 29 |     | <span class='neutral'></span>
+ 30 |     | <span class='neutral'>    mapping(address =&gt; EmittedInstanceData) emittedInstances;</span>
+ 31 |     | <span class='neutral'></span>
+ 32 |     | <span class='neutral'>    event LevelInstanceCreatedLog(address indexed player, address instance);</span>
+ 33 |     | <span class='neutral'>    event LevelCompletedLog(address indexed player, Level level);</span>
+ 34 |     | <span class='neutral'></span>
+ 35 |     | <span class='unexecuted'>    function createLevelInstance(Level _level)</span>
+ 36 |     | <span class='neutral'>        public</span>
+ 37 |     | <span class='neutral'>        payable</span>
+ 38 |     | <span class='unexecuted'>        returns (address)</span>
+ 39 |     | <span class='neutral'>    {</span>
+ 40 |     | <span class='neutral'>        // Ensure level is registered.</span>
+ 41 |     | <span class='unexecuted'>        require(registeredLevels[address(_level)]);</span>
+ 42 |     | <span class='neutral'></span>
+ 43 |     | <span class='neutral'>        // Get level factory to create an instance.</span>
+ 44 |     | <span class='unexecuted'>        address instance = _level.createInstance{value: msg.value}(msg.sender);</span>
+ 45 |     | <span class='neutral'></span>
+ 46 |     | <span class='neutral'>        // Store emitted instance relationship with player and level.</span>
+ 47 |     | <span class='unexecuted'>        emittedInstances[instance] = EmittedInstanceData(</span>
+ 48 |     | <span class='unexecuted'>            msg.sender,</span>
+ 49 |     | <span class='neutral'>            _level,</span>
+ 50 |     | <span class='neutral'>            false</span>
+ 51 |     | <span class='neutral'>        );</span>
+ 52 |     | <span class='neutral'></span>
+ 53 |     | <span class='neutral'>        // Retrieve created instance via logs.</span>
+ 54 |     | <span class='unexecuted'>        emit LevelInstanceCreatedLog(msg.sender, instance);</span>
+ 55 |     | <span class='neutral'></span>
+ 56 |     | <span class='unexecuted'>        return instance; // Return data - not possible to read emitted events via solidity</span>
+ 57 |     | <span class='neutral'>    }</span>
+ 58 |     | <span class='neutral'></span>
+ 59 |     | <span class='unexecuted'>    function submitLevelInstance(address payable _instance)</span>
+ 60 |     | <span class='neutral'>        public</span>
+ 61 |     | <span class='unexecuted'>        returns (bool)</span>
+ 62 |     | <span class='neutral'>    {</span>
+ 63 |     | <span class='neutral'>        // Get player and level.</span>
+ 64 |     | <span class='unexecuted'>        EmittedInstanceData storage data = emittedInstances[_instance];</span>
+ 65 |     | <span class='unexecuted'>        require(data.player == msg.sender); // instance was emitted for this player</span>
+ 66 |     | <span class='unexecuted'>        require(data.completed == false); // not already submitted</span>
+ 67 |     | <span class='neutral'></span>
+ 68 |     | <span class='neutral'>        // Have the level check the instance.</span>
+ 69 |     | <span class='unexecuted'>        if (data.level.validateInstance(_instance, msg.sender)) {</span>
+ 70 |     | <span class='neutral'>            // Register instance as completed.</span>
+ 71 |     | <span class='unexecuted'>            data.completed = true;</span>
+ 72 |     | <span class='neutral'></span>
+ 73 |     | <span class='neutral'>            // Notify success via logs.</span>
+ 74 |     | <span class='unexecuted'>            emit LevelCompletedLog(msg.sender, data.level);</span>
+ 75 |     | <span class='neutral'></span>
+ 76 |     | <span class='unexecuted'>            return true; // Return data - not possible to read emitted events</span>
+ 77 |     | <span class='neutral'>        }</span>
+ 78 |     | <span class='neutral'></span>
+ 79 |     | <span class='unexecuted'>        return false; // Return data - not possible to read emitted events via solidity</span>
+ 80 |     | <span class='neutral'>    }</span>
+ 81 |     | <span class='neutral'>}</span>
+ 82 |     | <span class='neutral'></span>
+
+</code>
+<br />
+
